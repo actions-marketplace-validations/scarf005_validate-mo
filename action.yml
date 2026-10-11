@@ -8,6 +8,8 @@ inputs:
 runs:
   using: composite
   steps:
+    - run: command -v msgfmt >/dev/null || sudo apt-get install -y -qq gettext
+      shell: bash
     - run: python3 "$GITHUB_ACTION_PATH/validate_mo.py"
       shell: bash
       env: { GITHUB_TOKEN: "${{ inputs.token }}", PATTERN: "${{ inputs.pattern }}" }

@@ -15,5 +15,5 @@ jobs:
       - uses: scarf005/validate-mo@v1
 ```
 
-Requires `msgfmt` (preinstalled on `ubuntu-latest`) and `pull-requests: read`.
+Requires `pull-requests: read`. Installs `gettext` (`msgfmt`) with apt when missing, so use a Debian-based runner.
 Inputs: `pattern` (regex all changed files must match; default `(?:.*/)?lang/[^/]+\.(?:po|mo|pot)`), `token`.
