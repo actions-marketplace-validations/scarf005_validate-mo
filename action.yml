@@ -8,7 +8,7 @@ inputs:
 runs:
   using: composite
   steps:
-    - run: command -v msgfmt >/dev/null || $(command -v sudo) apt-get install -y -qq gettext
+    - run: command -v msgfmt >/dev/null || { S=$(command -v sudo); $S apt-get update -qq && $S apt-get install -y -qq gettext; }
       shell: bash
     - run: python3 "$GITHUB_ACTION_PATH/validate_mo.py"
       shell: bash
