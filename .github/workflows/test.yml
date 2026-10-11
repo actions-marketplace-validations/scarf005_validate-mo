@@ -5,5 +5,5 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
-      - run: command -v msgfmt >/dev/null || (command -v sudo >/dev/null && sudo || env) apt-get install -y -qq gettext
+      - run: command -v msgfmt >/dev/null || $(command -v sudo) apt-get install -y -qq gettext
       - run: python3 -m unittest tests.test_validate_mo
