@@ -1,8 +1,9 @@
 on: { push: { branches: [main] }, pull_request: }
 jobs:
   test:
-    runs-on: ubuntu-latest
+    strategy: { matrix: { os: [ubuntu-latest, ubuntu-slim] } }
+    runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
-      - run: sudo apt-get install -y -qq gettext
+      - run: command -v msgfmt >/dev/null || (command -v sudo >/dev/null && sudo || env) apt-get install -y -qq gettext
       - run: python3 -m unittest tests.test_validate_mo
