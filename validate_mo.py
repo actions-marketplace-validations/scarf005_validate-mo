@@ -8,7 +8,7 @@ Warnings: .mo does not match the sibling .po, or no .po was found.
 import json, os, re, struct, subprocess, sys, tempfile, urllib.request
 from pathlib import Path
 
-PATTERN = r"(?:.*/)?lang/[^/]+\.(?:po|mo|pot)"
+PATTERN = r"(?:.*/)?lang/(?:.*/)?[^/]+\.(?:po|mo|pot)"
 LIMIT = 5
 
 
@@ -41,6 +41,12 @@ def parse_mo(data: bytes) -> dict[str, str]:
     return dict(zip(*strings))
 
 
+def sibling_po(mo: Path) -> Path:
+    """`x/ru.mo` -> `x/ru.po`; `lang/mo/<loc>/LC_MESSAGES/<n>.mo` -> `lang/po/<loc>.po`."""
+    if mo.parent.name == "LC_MESSAGES" and mo.parents[2].name == "mo": return mo.parents[3] / "po" / f"{mo.parents[1].name}.po"
+    return mo.with_suffix(".po")
+
+
 def compile_po(po: Path) -> dict[str, str]:
     with tempfile.TemporaryDirectory() as tmp:
         out = Path(tmp) / "out.mo"
@@ -69,7 +75,7 @@ def validate(root: Path, files: list[str], pattern: str = PATTERN) -> tuple[list
         try: catalog = parse_mo(mo.read_bytes())
         except ValueError as e:
             errors.append((f, f"invalid .mo: {e}")); rows.append((f, "FAIL", str(e))); continue
-        po = mo.with_suffix(".po")
+        po = sibling_po(mo)
         if not po.is_file():
             warnings.append((f, "no sibling .po to compare against")); rows.append((f, "ok", "no .po")); continue
         try: diff = compare(catalog, compile_po(po))
