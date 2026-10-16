@@ -4,7 +4,7 @@ author: scarf005
 branding: { icon: shield, color: green }
 inputs:
   token: { description: Token used to list PR files, default: "${{ github.token }}" }
-  pattern: { description: Regex every changed file must fully match, default: '(?:.*/)?lang/[^/]+\.(?:po|mo|pot)' }
+  pattern: { description: Regex every changed file must fully match, default: '(?:.*/)?lang/(?:.*/)?[^/]+\.(?:po|mo|pot)' }
 runs:
   using: composite
   steps:

@@ -11,9 +11,9 @@ jobs:
   validate-mo:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: scarf005/validate-mo@v1
 ```
 
-Requires `pull-requests: read`. Installs `gettext` (`msgfmt`) with apt when missing, so use a Debian-based runner.
-Inputs: `pattern` (regex all changed files must match; default `(?:.*/)?lang/[^/]+\.(?:po|mo|pot)`), `token`.
+A `.mo` is compared with the `.po` of the same name next to it, or `lang/po/<loc>.po` for `lang/mo/<loc>/LC_MESSAGES/*.mo`. Requires `pull-requests: read`. Installs `gettext` (`msgfmt`) with apt when missing, so use a Debian-based runner.
+Inputs: `pattern` (regex all changed files must match; default `(?:.*/)?lang/(?:.*/)?[^/]+\.(?:po|mo|pot)`), `token`.

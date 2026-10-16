@@ -61,6 +61,12 @@ class ValidateMo(unittest.TestCase):
         errors, warnings, _ = r.run(["m/lang/ru_RU.mo"])
         self.assertEqual((errors, len(warnings)), ([], 1))
 
+    def test_nested_lc_messages_layout_pairs_with_lang_po_dir(self):
+        r = self.repo(); (r.root / "m/lang/po").mkdir(); (r.root / "m/lang/mo/ru/LC_MESSAGES").mkdir(parents=True)
+        (r.root / "m/lang/po/ru.po").write_text(PO)
+        subprocess.run(["msgfmt", "-o", r.root / "m/lang/mo/ru/LC_MESSAGES/ru.mo", r.root / "m/lang/po/ru.po"], check=True)
+        self.assertEqual(r.run(["m/lang/mo/ru/LC_MESSAGES/ru.mo"])[:2], ([], []))
+
     def test_parse_accepts_big_endian(self):
         r = self.repo(); subprocess.run(["msgfmt", "--endianness=big", "-o", r.mo, r.po], check=True)
         self.assertEqual(parse_mo(r.mo.read_bytes())["hi"], "привет")
