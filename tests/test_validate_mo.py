@@ -43,8 +43,8 @@ class ValidateMo(unittest.TestCase):
         self.assertTrue(r.run()[0])
 
     def test_non_mo_files_are_ignored(self):
-        r = self.repo(); (r.root / "data.json").write_text("{}"); (r.root / "run.sh").write_text("x"); os.chmod(r.root / "run.sh", 0o755)
-        self.assertEqual(r.run(["data.json", "run.sh", "m/lang/ru_RU.po", "m/lang/ru_RU.mo"])[:2], ([], []))
+        r = self.repo(); (r.root / "data.json").write_text("{}"); (r.root / "run.sh").write_text("x"); os.chmod(r.root / "run.sh", 0o755); (r.root / "link").symlink_to(r.po)
+        self.assertEqual(r.run(["data.json", "run.sh", "link", "m/lang/ru_RU.po", "m/lang/ru_RU.mo"])[:2], ([], []))
 
     def test_symlink_and_exec_mo_fail(self):
         r = self.repo(); (r.root / "m/lang/a.mo").symlink_to(r.mo); os.chmod(r.mo, 0o755)

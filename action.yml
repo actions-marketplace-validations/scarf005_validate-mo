@@ -4,7 +4,6 @@ author: scarf005
 branding: { icon: shield, color: green }
 inputs:
   token: { description: Token used to list PR files, default: "${{ github.token }}" }
-  pattern: { description: Regex every changed file must fully match, default: '(?:.*/)?lang/(?:.*/)?[^/]+\.(?:po|mo|pot)' }
 runs:
   using: composite
   steps:
@@ -12,4 +11,4 @@ runs:
       shell: bash
     - run: python3 "$GITHUB_ACTION_PATH/validate_mo.py"
       shell: bash
-      env: { GITHUB_TOKEN: "${{ inputs.token }}", PATTERN: "${{ inputs.pattern }}" }
+      env: { GITHUB_TOKEN: "${{ inputs.token }}" }
