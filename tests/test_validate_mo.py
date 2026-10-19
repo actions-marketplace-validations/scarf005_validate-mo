@@ -42,13 +42,13 @@ class ValidateMo(unittest.TestCase):
         r = self.repo(); r.mo.write_bytes(r.mo.read_bytes().replace("пока".encode(), b"\xff\xfe\xfd\xfc\xfb\xfa\xf9\xf8"))
         self.assertTrue(r.run()[0])
 
-    def test_outside_pattern_fails(self):
-        r = self.repo(); (r.root / "m/lang/run.sh").write_text("x")
-        self.assertIn("outside", r.run(["m/lang/run.sh"])[0][0][1])
+    def test_non_mo_files_are_ignored(self):
+        r = self.repo(); (r.root / "data.json").write_text("{}"); (r.root / "run.sh").write_text("x"); os.chmod(r.root / "run.sh", 0o755); (r.root / "link").symlink_to(r.po)
+        self.assertEqual(r.run(["data.json", "run.sh", "link", "m/lang/ru_RU.po", "m/lang/ru_RU.mo"])[:2], ([], []))
 
-    def test_symlink_and_exec_fail(self):
-        r = self.repo(); (r.root / "m/lang/a.mo").symlink_to(r.mo); os.chmod(r.po, 0o755)
-        self.assertEqual({e[1] for e in r.run(["m/lang/a.mo", "m/lang/ru_RU.po"])[0]}, {"symlink", "executable bit set"})
+    def test_symlink_and_exec_mo_fail(self):
+        r = self.repo(); (r.root / "m/lang/a.mo").symlink_to(r.mo); os.chmod(r.mo, 0o755)
+        self.assertEqual({e[1] for e in r.run(["m/lang/a.mo", "m/lang/ru_RU.mo"])[0]}, {"symlink", "executable bit set"})
 
     def test_po_mismatch_warns_with_counts_but_passes(self):
         r = self.repo(); r.po.write_text(PO.replace("пока", "бай") + '\nmsgid "new"\nmsgstr "новый"\n')

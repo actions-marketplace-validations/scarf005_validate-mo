@@ -1,14 +1,12 @@
 #!/usr/bin/env python3
 """Validate gettext .mo files changed in a pull request.
 
-Errors (job fails): .mo is not a strictly well-formed catalog, or the PR touches
-files outside the allowed pattern, symlinks or executables.
+Errors (job fails): .mo is not a strictly well-formed catalog, a symlink, or executable.
 Warnings: .mo does not match the sibling .po, or no .po was found.
 """
-import json, os, re, struct, subprocess, sys, tempfile, urllib.request
+import json, os, struct, subprocess, sys, tempfile, urllib.request
 from pathlib import Path
 
-PATTERN = r"(?:.*/)?lang/(?:.*/)?[^/]+\.(?:po|mo|pot)"
 LIMIT = 5
 
 
@@ -63,12 +61,11 @@ def compare(mo: dict[str, str], po: dict[str, str]) -> str | None:
     return f"differs from .po: {len(missing)} missing, {len(extra)} extra, {len(changed)} changed ({pct:.1f}% of {len(po.keys() | mo.keys())} msgids); " + "; ".join(sample[:LIMIT])
 
 
-def validate(root: Path, files: list[str], pattern: str = PATTERN) -> tuple[list, list, list]:
+def validate(root: Path, files: list[str]) -> tuple[list, list, list]:
     errors, warnings, rows = [], [], []
-    for f in files:
+    for f in (f for f in files if f.endswith(".mo")):
         p = root / f
-        if not re.fullmatch(pattern, f): errors.append((f, "path outside allowed pattern"))
-        elif p.is_symlink(): errors.append((f, "symlink"))
+        if p.is_symlink(): errors.append((f, "symlink"))
         elif p.stat().st_mode & 0o111: errors.append((f, "executable bit set"))
     for f in (f for f in files if f.endswith(".mo") and (root / f).is_file() and not any(e[0] == f for e in errors)):
         mo = root / f
@@ -103,7 +100,7 @@ def esc(s: str) -> str: return s.replace("%", "%25").replace("\r", "%0D").replac
 def main() -> int:
     event = json.loads(Path(os.environ["GITHUB_EVENT_PATH"]).read_text())
     files = pr_files(event, os.environ["GITHUB_TOKEN"])
-    errors, warnings, rows = validate(Path.cwd(), files, os.environ.get("PATTERN") or PATTERN)
+    errors, warnings, rows = validate(Path.cwd(), files)
     for level, items in (("error", errors), ("warning", warnings)):
         for f, msg in items: print(f"::{level} file={esc(f)},title=validate-mo::{esc(msg)}")
     summary = "| file | result | detail |\n|---|---|---|\n" + "".join(f"| `{f}` | {r} | {d.replace('|', '\\|')} |\n" for f, r, d in rows)
